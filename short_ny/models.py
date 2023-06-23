@@ -11,8 +11,8 @@ class Link(db.Model):
     __tablename__ = 'links'
     id = db.Column(db.Integer, primary_key=True)
     original_url = db.Column(db.String(255))
-    short_url = db.Column(db.String(255), unique=True)
-    views =db.column(db.integer, default=0)
+    short_url = db.Column(db.String(20), unique=True)
+    views =db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
@@ -21,7 +21,7 @@ class Link(db.Model):
         self.short_url = self.generate_short_link()
         
     def generate_short_link(self):
-        characters = string.digits + string.ascii_letters
+        characters = string.ascii_uppercase + + string.ascii_lowercase + string.digits 
         short_url = ''.join(choices(characters, k=6))
         
         link = self.query.filter_by(short_url=short_url).first()

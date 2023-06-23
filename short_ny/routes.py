@@ -9,19 +9,25 @@ shortner = Blueprint('shortner', __name__)
 
 @shortner.route('/<short_url>')
 def redirect_to_url(short_url):
-    return ""
+    link = Link.query.filter_by(short_url=short_url).first_or_404()
+    link.views = link.views + 1
+    
+    db.session.commit()
+    
+    return redirect(link.original_url)
+
 
 
 @shortner.route('/create_link', methods=['POST'])
 def create_link():
-    orignial_url = request.form['original_url']
-    link = Link(orignial_url=orignial_url)
+    original_url = request.form['original_url']
+    link = Link(original_url=original_url)
     
     db.session.add(link)
     db.session.commit()
     
     return render_template('link_success.html',
-        new_url = link.short_url, orignial_url=link.orignial_url)
+        new_url = link.short_url, original_url=link.original_url)
 
 @shortner.route('/')
 def index():
