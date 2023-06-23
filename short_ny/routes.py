@@ -1,4 +1,4 @@
-from flask import Blueprint, request, redirect, render_template, url_for
+from flask import Blueprint, request, redirect, render_template, url_for,jsonify 
 
 from .models import Link
 from .extensions import db
@@ -36,7 +36,29 @@ def index():
 
 @shortner.route('/analytics')
 def analytics():
-    return ""
+    links = Link.query.all()
+
+    return render_template('analytics.html', links=links)
+
+# @shortner.route('/analytics')
+# def analytics():
+#     link = Link.query.all()
+#     links = []
+
+#     for l in link:
+#         views = str(l.views) 
+#         short_url = str(l.short_url)
+#         url = str(l.original_url)
+
+#         data = {
+#             'views': views,
+#             'short_url' : short_url,
+#             'url' : url
+#         }
+#         links.append(data)
+        
+#     print (links)
+#     return jsonify({'links': links})
 
 
 @shortner.errorhandler(404)
