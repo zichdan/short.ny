@@ -1,32 +1,34 @@
 from flask import Blueprint, request, redirect, render_template, url_for
 
+from .models import Link
+from .extensions import db
+
 
 shortner = Blueprint('shortner', __name__)
 
 
+@shortner.route('/<short_url>')
+def redirect_to_url(short_url):
+    return ""
+
+
+@shortner.route('/create_link', methods=['POST'])
+def create_link():
+    orignial_url = request.form['original_url']
+    link = Link(orignial_url=orignial_url)
+    
+    db.session.add(link)
+    db.session.commit()
+    
 
 @shortner.route('/')
 def index():
     return render_template('index.html')
 
 
-@shortner.route('/<short_url>')
-def redirect_to_long_url(short_url):
-    return redirect(url_for('long_url.redirect_to_long_url', long_url=short_url))
-
-
-@shortner.route('/create_link', method=['POST'])
-def create_link():
-    return  ""
-
 @shortner.route('/analytics')
 def analytics():
     return ""
-
-
-# @shortner.errorhandler(403)
-# def page_not_found():
-#     return ""
 
 
 @shortner.errorhandler(404)
