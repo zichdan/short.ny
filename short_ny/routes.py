@@ -20,6 +20,8 @@ def create_link():
     db.session.add(link)
     db.session.commit()
     
+    return render_template('link_success.html',
+        new_url = link.short_url, orignial_url=link.orignial_url)
 
 @shortner.route('/')
 def index():
