@@ -12,7 +12,7 @@ auth = Blueprint('auth', __name__)
 @auth.route('/signup', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('auth.index'))
     
     if request.method == 'POST':
         username = request.form.get('username')
@@ -22,12 +22,12 @@ def register():
         username_exists = User.query.filter_by(username=username).first()
         if username_exists:
             flash('This username already exists.')
-            return redirect(url_for('register'))
+            return redirect(url_for('auth.register'))
 
         email_exists = User.query.filter_by(email=email).first()
         if email_exists:
             flash('This email is already registered.')
-            return redirect(url_for('register'))
+            return redirect(url_for('auth.register'))
 
         password_hash = generate_password_hash(password)
 
@@ -36,7 +36,7 @@ def register():
         db.session.commit()
 
         flash('You are now signed up.')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login'))
 
     return render_template('signup.html')
 
@@ -44,7 +44,7 @@ def register():
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('auth.index'))
     
     if request.method == 'POST':
         email = request.form.get('email')
@@ -56,15 +56,15 @@ def login():
             if user and check_password_hash(user.password_hash, password):
                 login_user(user)
                 flash('You are now logged in.')
-                return redirect(url_for('index'))
+                return redirect(url_for('auth.index'))
             
             if (user and check_password_hash(user.password_hash, password)) == False:
                 flash('Please provide valid credentials.')
-                return redirect(url_for('login'))
+                return redirect(url_for('auth.login'))
 
         else:
             flash('Account not found. Please sign up to continue.')
-            return redirect(url_for('register'))
+            return redirect(url_for('auth.register'))
         
     return render_template('login.html')
 
@@ -74,7 +74,7 @@ def login():
 def logout():
     logout_user()
     flash('You have been logged out.')
-    return redirect(url_for('index'))
+    return redirect(url_for('auth.index'))
 
 
 
