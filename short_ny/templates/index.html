@@ -4,7 +4,7 @@
 {% if current_user.is_authenticated %}
 <h2>Welcome, {{ current_user.username }}! <span class="wave">👋🏾</span></h2>
 <br>
-<form action="{{url_for('auth.index')}}" method="POST" class="form-container">
+<form action="{{url_for('shortner.index')}}" method="POST" class="form-container">
   <div class="form-group">
     <label for="long_link">Original Link</label>
     <input type="url" name="long_link" class="form-control" placeholder="https://example.com/long-link" required>
