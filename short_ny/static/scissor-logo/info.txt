@@ -1,0 +1,18 @@
+
+Hope you enjoy your new logo, here are the people that
+made your beautiful logo happen :)
+font name: Rubik-Black
+font link: https://fonts.google.com/specimen/Rubik
+font author: Hubert and Fischer
+font author site: http://hubertfischer.com/
+Slogan Font: KaushanScript-Regular.ttf
+
+icon designer: Genius Icons
+icon designer link: /rajappar29
+        
+
+fontColor: {"hex":"#D6257B"}
+bgColor: {"hex":"#161C60"}
+iconColor: {"hex":"#D6257B"}
+sloganColor: {"hex":"#21ACC3"}
+      
