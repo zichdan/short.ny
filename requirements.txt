@@ -2,6 +2,10 @@ Flask
 Flask-Login
 Flask-SQLAlchemy
 Flask-Migrate
+
+Flask-Caching
+Flask-Limiter
+
 python-dotenv
 python_decouple
 qrcode
