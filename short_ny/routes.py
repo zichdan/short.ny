@@ -1,74 +1,167 @@
-from flask import Blueprint, request, redirect, render_template, url_for,jsonify 
-
-from .models import Link
-from .extensions import db
+from flask import Blueprint, flash, render_template, url_for, request, redirect
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import current_user, login_user, logout_user, login_required
+from .extensions import db        #app, cache, limiter
+from .models import User, Link
+import random, string, requests, io, qrcode
 
 
 shortner = Blueprint('shortner', __name__)
 
 
-@shortner.route('/<short_url>')
-def redirect_to_url(short_url):
-    link = Link.query.filter_by(short_url=short_url).first_or_404()
-    link.views = link.views + 1
-    
-    db.session.commit()
-    
-    return redirect(link.original_url)
+
+def generate_short_link(length=5):
+    chars = string.ascii_letters + string.digits
+    short_link = ''.join(random.choice(chars) for _ in range(length))
+    return short_link
 
 
-
-@shortner.route('/create_link', methods=['POST'])
-def create_link():
-    original_url = request.form['original_url']
-    link = Link(original_url=original_url)
-    
-    db.session.add(link)
-    db.session.commit()
-    
-    return render_template('link_success.html',
-        new_url = link.short_url, original_url=link.original_url)
-
-@shortner.route('/')
-def index():
-    return render_template('index.html')
-
-
-@shortner.route('/analytics')
-def analytics():
-    links = Link.query.all()
-
-    return render_template('analytics.html', links=links)
-
-# @shortner.route('/analytics')
-# def analytics():
-#     link = Link.query.all()
-#     links = []
-
-#     for l in link:
-#         views = str(l.views) 
-#         short_url = str(l.short_url)
-#         url = str(l.original_url)
-
-#         data = {
-#             'views': views,
-#             'short_url' : short_url,
-#             'url' : url
-#         }
-#         links.append(data)
-        
-#     print (links)
-#     return jsonify({'links': links})
+def generate_qr_code(link):
+    image = qrcode.make(link)
+    image_io = io.BytesIO()
+    image.save(image_io, 'PNG')
+    image_io.seek(0)
+    return image_io
 
 
 @shortner.errorhandler(404)
-def page_not_found(e):
-    return "<h1>Page Not Found 404<h1>", 404
+def error_404(error):
+    return render_template('404.html'), 404
 
 
+@shortner.errorhandler(403)
+def error_404(error):
+    return render_template('403.html'), 403
 
 
+@shortner.route('/', methods=['GET', 'POST'])
+# @limiter.limit('10/minutes')
+def index():
+    if request.method == 'POST':
+        long_link = request.form['long_link']
+        custom_path = request.form['custom_path'] or None
+        long_link_exists = Link.query.filter_by(user_id=current_user.id).filter_by(long_link=long_link).first()
+
+        if requests.get(long_link).status_code != 200:
+            return render_template('404.html')
+
+        elif long_link_exists:
+            flash ('This link has already been shortened.')
+            return redirect(url_for('dashboard'))
+
+        elif custom_path:
+            path_exists = Link.query.filter_by(custom_path=custom_path).first()
+            if path_exists:
+                flash ('That custom path is taken. Please try another.')
+                return redirect(url_for('index'))
+            short_link = custom_path
+
+        elif long_link[:4] != 'http':
+            long_link = 'http://' + long_link
+        
+        else:
+            while True:
+                short_link = generate_short_link()
+                short_link_exists = Link.query.filter_by(short_link=short_link).first()
+                if not short_link_exists:
+                    break
+        
+        link = Link(long_link=long_link, short_link=short_link, custom_path=custom_path, user_id=current_user.id)
+        db.session.add(link)
+        db.session.commit()
+        return redirect(url_for('dashboard'))
+    
+    return render_template('index.html')
 
 
+@shortner.route('/about')
+def about():
+    return render_template('about.html')
 
+
+@shortner.route('/dashboard')
+@login_required
+def dashboard():
+    links = Link.query.filter_by(user_id=current_user.id).order_by(Link.created_at.desc()).all()
+    host = request.host_url
+    return render_template('dashboard.html', links=links, host=host)
+
+
+@shortner.route('/history')
+@login_required
+def history():
+    links = Link.query.filter_by(user_id=current_user.id).order_by(Link.created_at.desc()).all()
+    host = request.host_url
+    return render_template('history.html', links=links, host=host)
+
+
+@shortner.route('/<short_link>')
+# @cache.cached(timeout=30)
+def redirect_link(short_link):
+    link = Link.query.filter_by(short_link=short_link).first()
+    if link:
+        link.clicks += 1
+        db.session.commit()
+        return redirect(link.long_link)
+    else:
+        return render_template('404.html')
+
+
+@shortner.route('/<short_link>/qr_code')
+@login_required
+# @cache.cached(timeout=30)
+# @limiter.limit('10/minutes')
+def generate_qr_code_link(short_link):
+    link = Link.query.filter_by(user_id=current_user.id).filter_by(short_link=short_link).first()
+
+    if link:
+        image_io = generate_qr_code(request.host_url + link.short_link)
+        return image_io.getvalue(), 200, {'Content-Type': 'image/png'}
+    
+    return render_template('404.html')
+
+
+@shortner.route('/<short_link>/delete')
+@login_required
+def delete(short_link):
+    link = Link.query.filter_by(user_id=current_user.id).filter_by(short_link=short_link).first()
+
+    if link:
+        db.session.delete(link)
+        db.session.commit()
+        return redirect(url_for('dashboard'))
+    
+    return render_template('404.html')
+
+
+@shortner.route('/<short_link>/edit', methods=['GET', 'POST'])
+@login_required
+# @limiter.limit('10/minutes')
+def update(short_link):
+    link = Link.query.filter_by(user_id=current_user.id).filter_by(short_link=short_link).first()
+    host = request.host_url
+    if link:
+        if request.method == 'POST':
+            custom_path = request.form['custom_path']
+            if custom_path:
+                link_exists = Link.query.filter_by(custom_path=custom_path).first()
+                if link_exists:
+                    flash ('That custom path already exists. Please try another.')
+                    return redirect(url_for('update', short_link=short_link))
+                link.custom_path = custom_path
+                link.short_link = custom_path
+            db.session.commit()
+            return redirect(url_for('dashboard'))
+        return render_template('edit.html', link=link, host=host)
+    return render_template('404.html')
+
+
+@shortner.route('/<short_link>/analytics')
+@login_required
+def analytics(short_link):
+    link = Link.query.filter_by(user_id=current_user.id).filter_by(short_link=short_link).first()
+    host = request.host_url
+    if link:
+        return render_template('analytics.html', link=link, host=host)
+    return render_template('404.html')
 

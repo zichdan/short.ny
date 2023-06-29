@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}About{% endblock title %}
+
+{% block content %}
+<section class="container">
+  {% if current_user.is_authenticated %}
+  <h2>Welcome to Scissor, {{ current_user.username }}! <span class="wave">👋🏾</span></h2>
+  {% else %}
+  <h2>Welcome to Scissor! <span class="wave">👋🏾</span></h2>
+  {% endif %}
+    
+  <h3>"Brief is the new Black"</h3>
+  
+  <p>This is what inspires the team at Scissor</p>
+    
+  <p>In today's world, it's important to keep things brief</p> 
+    
+  <p>Scissor is a simple tool which makes URLs as short as possible</p>
+
+  <p>Scissor converts long URLs into easily sharable QR codes and short, customizable links</p>
+</section>
+{% endblock content %}

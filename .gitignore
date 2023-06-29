@@ -1,6 +1,6 @@
 .DS_Store
-# .env
-# .flaskenv
+.env
+.flaskenv
 *.pyc
 *.pyo
 env/
@@ -24,3 +24,4 @@ htmlcov/
 .coverage.*
 *,cover
 __pycache__/
+db.sqlite3

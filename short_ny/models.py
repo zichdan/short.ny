@@ -4,6 +4,21 @@ import string
 from random import choices
 
 
+from flask_login import UserMixin
+from . import db
+
+
+class User(db.Model, UserMixin):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False, unique=True)
+    email = db.Column(db.String(80), nullable=False, unique=True)
+    password_hash = db.Column(db.Text, nullable=False)
+    # links = db.relationship('Link', backref='user', lazy=True)
+
+    def __repr__(self):
+        return f'User: <{self.username}>'
+
 
 
 

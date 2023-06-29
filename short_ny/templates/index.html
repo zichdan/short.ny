@@ -1,24 +1,34 @@
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
-
-<form method="POST" action="{{ url_for('shortner.create_link') }}" style="max-width: 800px; margin: 50px">
-    <div class="form-group">
-        <label for="original-url" style="font-size: 28px;">
-            ORIGINAL URL:
-        </label>
-        <input type="text" class="form-control" placeholder="Enter URL" name="original_url">
-    </div>
-   
-    <div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </div>
-
+{% extends 'base.html' %}
+{% block title %}Link Shortener{% endblock title %}
+{% block content %}
+{% if current_user.is_authenticated %}
+<h2>Welcome, {{ current_user.username }}! <span class="wave">👋🏾</span></h2>
+<br>
+<form action="{{url_for('auth.index')}}" method="POST" class="form-container">
+  <div class="form-group">
+    <label for="long_link">Original Link</label>
+    <input type="url" name="long_link" class="form-control" placeholder="https://example.com/long-link" required>
+  </div>
+  <div class="form-group">
+    <label for="custom_path">Custom Back-Half (Optional)</label>
+    <input type="text" name="custom_path" class="form-control" placeholder="Example: sciz.site/custom-back-half">
+  </div>
+  <div class="form-group">
+    <input type="submit" value="Shorten Link" class="button"/>
+  </div>
 </form>
-
-
-<!-- 
-
-<div>
-    <label for="short_url">Short URL:</label>
-    <input type="text" name="short_url" id="short_url" class="form-control" required>
-</div>  -->
+{% else %}
+<div class="logo-container">
+  <img
+    src="{{url_for('static',filename= 'scissor-logo/vector/default-monochrome.svg')}}"
+    alt="Logo"
+    width="50%"
+    class="logo"
+  />
+</div>
+<h3>...brief is the new black</h3>
+<small>
+  <a href="{{url_for('auth.register')}}">Sign up</a> or <a href="{{url_for('auth.login')}}">log in</a> to shorten links for free
+</small>
+{% endif %}
+{% endblock content %}
