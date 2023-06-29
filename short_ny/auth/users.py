@@ -12,7 +12,7 @@ auth = Blueprint('auth', __name__)
 @auth.route('/signup', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('auth.index'))
+        return redirect(url_for('shortner.index'))
     
     if request.method == 'POST':
         username = request.form.get('username')
@@ -44,7 +44,7 @@ def register():
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('auth.index'))
+        return redirect(url_for('shortner.index'))
     
     if request.method == 'POST':
         email = request.form.get('email')
@@ -56,7 +56,7 @@ def login():
             if user and check_password_hash(user.password_hash, password):
                 login_user(user)
                 flash('You are now logged in.')
-                return redirect(url_for('auth.index'))
+                return redirect(url_for('shortner.index'))
             
             if (user and check_password_hash(user.password_hash, password)) == False:
                 flash('Please provide valid credentials.')
@@ -74,7 +74,7 @@ def login():
 def logout():
     logout_user()
     flash('You have been logged out.')
-    return redirect(url_for('auth.index'))
+    return redirect(url_for('shortner.index'))
 
 
 
