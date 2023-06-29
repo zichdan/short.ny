@@ -27,7 +27,7 @@
         <a href="{{url_for('shortner.index')}}">Home</a>
         <a href="{{url_for('shortner.about')}}">About</a>
         {% if current_user.is_authenticated %}
-        <a href="{{url_for('Shortner.dashboard')}}">Dashboard</a>
+        <a href="{{url_for('shortner.dashboard')}}">Dashboard</a>
         <a href="{{url_for('shortner.history')}}">History</a>
         <a href="{{url_for('auth.logout')}}">Log Out</a>
         {% else %}
