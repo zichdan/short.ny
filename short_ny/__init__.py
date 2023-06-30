@@ -1,11 +1,11 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
-from flask_migrate import Migrate
 
-from os import path
-from .extensions import db
+import os, qrcode
+# from os import path
+
+from .extensions import db, cache, limiter, login_manager, migrate
 from .models import User
+
 from .auth.users import auth
 from .routes import shortner
 
@@ -13,6 +13,8 @@ from dotenv import load_dotenv
 
 from.routes import shortner
 from .config import config_dict
+
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 def create_app(config=config_dict['dev']):
@@ -22,25 +24,27 @@ def create_app(config=config_dict['dev']):
     
     db.init_app(app)
 
-    
     load_dotenv()
     
+    app.config['CACHE_TYPE'] = 'SimpleCache'
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+    app.config.update(
+        UPLOAD_PATH = os.path.join(BASE_DIR, 'static', 'qr-codes')
+    )
         
-    # cache = Cache(app)
-    # limiter = Limiter(get_remote_address)
-
-    # qr = qrcode.QRCode(
-    #     version = 1,
-    #     error_correction = qrcode.constants.ERROR_CORRECT_L,
-    #     box_size = 5,
-    #     border = 4
-    # )
+    migrate.init_app(app, db)
+    limiter.init_app(app)
+    cache.init_app(app)
+        
+    qr = qrcode.QRCode(
+        version = 1,
+        error_correction = qrcode.constants.ERROR_CORRECT_L,
+        box_size = 5,
+        border = 4
+    )
     
-    
-    migrate = Migrate(app, db)
-    login_manager = LoginManager()
-    login_manager.login_view = 'auth.login'
     login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
 
 
     @login_manager.user_loader
@@ -55,25 +59,9 @@ def create_app(config=config_dict['dev']):
         db.create_all()
         
 
-    
     return app
 
 
-
-
-# def create_app(config=config_dict['dev']):
-#     app = Flask(__name__)
-    
-#     app.config.from_pyfile(config_file)
-
-#     db.init_app(app)
-
-
-
-
-#     app.register_blueprint(shortner)
-    
-#     return app
 
 
 

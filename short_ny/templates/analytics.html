@@ -6,9 +6,9 @@
     <section class="container analytics-container">
       <div class="card analytics-card">
         <div class="card-body">
-          <img class="card-qrcode" src="{{ url_for('Shortner.generate_qr_code_link', short_link=link.short_link) }}" alt="QR Code">
+          <img class="card-qrcode" src="{{ url_for('shortner.generate_qr_code_link', short_link=link.short_link) }}" alt="QR Code">
           <br>
-          <a href="{{ url_for('Shortner.generate_qr_code_link', short_link=link.short_link) }}" download="qrcode image">
+          <a href="{{ url_for('shortner.generate_qr_code_link', short_link=link.short_link) }}" download="qrcode image">
             <button class="button">Download QR Code</button>
           </a>
           <hr>
@@ -21,9 +21,9 @@
           </p>
           <p>
             Shortened Link: <br>
-            <a href="{{url_for('Shortner.redirect_link', short_link=link.short_link)}}" target="_blank">{{host}}{{link.short_link}}</a>
+            <a href="{{url_for('shortner.redirect_link', short_link=link.short_link)}}" target="_blank">{{host}}{{link.short_link}}</a>
           </p>
-          <a href="{{ url_for('Shortner.update', short_link=link.short_link) }}">
+          <a href="{{ url_for('shortner.update', short_link=link.short_link) }}">
             <button class="button">Edit Link</button>
           </a>
           <a href="{{ url_for('shortner.delete', short_link=link.short_link) }}">
