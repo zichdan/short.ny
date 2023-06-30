@@ -10,3 +10,7 @@ python-dotenv
 python_decouple
 qrcode
 requests
+gunicorn
+
+psycopg2-binary
+Pillow
